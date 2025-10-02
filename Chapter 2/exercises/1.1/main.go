@@ -8,13 +8,10 @@ import (
 )
 
 func main() {
-	randomString := uuid.NewString()
+	id := uuid.New().String()
 
 	for {
-		timestamp := time.Now().UTC().Format(time.RFC3339Nano)
-
-		fmt.Printf("%s: %s\n", timestamp, randomString)
-
+		fmt.Printf("%s: %s\n", time.Now().UTC().Format(time.RFC3339Nano), id)
 		time.Sleep(5 * time.Second)
 	}
 }
