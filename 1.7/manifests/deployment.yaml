@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: random-logger
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: random-logger
+  template:
+    metadata:
+      labels:
+        app: random-logger
+    spec:
+      containers:
+        - name: random-logger
+          image: asfalfa/random-logger:v4
+          env:
+            - name: PORT
+              value: "8080"
