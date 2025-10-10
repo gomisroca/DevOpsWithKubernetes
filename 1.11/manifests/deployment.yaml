@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logger-pingpong
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logger-pingpong
+  template:
+    metadata:
+      labels:
+        app: logger-pingpong
+    spec:
+      volumes:
+        - name: shared-data
+          persistentVolumeClaim:
+            claimName: logger-pingpong-claim
+
+      containers:
+        - name: random-logger
+          image: asfalfa/random-logger:v5
+          env:
+            - name: PORT
+              value: "8080"
+            - name: COUNTER_FILE
+              value: "/data/counter.txt"
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: shared-data
+              mountPath: /data
+
+        - name: ping-pong
+          image: asfalfa/ping-pong:v4
+          env:
+            - name: PORT
+              value: "8081"
+            - name: COUNTER_FILE
+              value: "/data/counter.txt"
+          ports:
+            - containerPort: 8081
+          volumeMounts:
+            - name: shared-data
+              mountPath: /data
