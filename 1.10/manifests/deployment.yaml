@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: random-logger-dep
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: random-logger
+  template:
+    metadata:
+      labels:
+        app: random-logger
+    spec:
+      volumes:
+        - name: shared-logs
+          emptyDir: {}
+      containers:
+        - name: log-writer
+          image: asfalfa/log-writer:latest
+          volumeMounts:
+            - name: shared-logs
+              mountPath: /shared
+        - name: log-reader
+          image: asfalfa/log-reader:latest
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: shared-logs
+              mountPath: /shared

@@ -1,0 +1,12 @@
+FROM node:20-slim
+
+WORKDIR /app
+
+COPY reader/package*.json ./
+RUN npm install --production
+
+COPY reader .
+
+EXPOSE 8080
+
+CMD ["node", "index.js"]

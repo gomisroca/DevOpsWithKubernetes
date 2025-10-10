@@ -1,0 +1,10 @@
+FROM node:20-slim
+
+WORKDIR /app
+
+COPY writer/package*.json ./
+RUN npm install --production
+
+COPY writer .
+
+CMD ["node", "index.js"]
