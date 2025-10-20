@@ -17,3 +17,7 @@
 - [1.13.](https://github.com/gomisroca/DevOpsWithKubernetes/tree/master/1.13)
 - [2.1.](https://github.com/gomisroca/DevOpsWithKubernetes/tree/master/2.1)
 - [2.2.](https://github.com/gomisroca/DevOpsWithKubernetes/tree/master/2.2)
+- [2.3.](https://github.com/gomisroca/DevOpsWithKubernetes/tree/master/2.3)
+- [2.4.](https://github.com/gomisroca/DevOpsWithKubernetes/tree/master/2.4)
+- [2.5.](https://github.com/gomisroca/DevOpsWithKubernetes/tree/master/2.5)
+- [2.6.](https://github.com/gomisroca/DevOpsWithKubernetes/tree/master/2.6)
