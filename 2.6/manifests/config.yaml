@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: project
+  name: todo-app-config
+data:
+  PORT_FRONTEND: "8080"
+  PORT_BACKEND: "8081"
+  IMAGE_FILE: "/data/image.jpg"
+  BACKEND_URL: "http://localhost:8081"
