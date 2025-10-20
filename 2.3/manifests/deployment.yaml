@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: exercises
+  name: logger-pingpong
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logger-pingpong
+  template:
+    metadata:
+      labels:
+        app: logger-pingpong
+    spec:
+      containers:
+        - name: random-logger
+          image: asfalfa/random-logger:v6
+          imagePullPolicy: Always
+          env:
+            - name: PORT
+              value: "8080"
+            - name: PINGS_URL
+              value: "http://localhost:8081/pings"
+          ports:
+            - containerPort: 8080
+
+        - name: ping-pong
+          image: asfalfa/ping-pong:v5
+          imagePullPolicy: Always
+          env:
+            - name: PORT
+              value: "8081"
+          ports:
+            - containerPort: 8081
