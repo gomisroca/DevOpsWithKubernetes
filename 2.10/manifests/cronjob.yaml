@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: todo-wiki-cron
+  namespace: project
+spec:
+  schedule: "0 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: add-todo
+              image: asfalfa/todo-cron:v1
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    configMapKeyRef:
+                      name: todo-app-config
+                      key: POSTGRES_URL
+          restartPolicy: OnFailure
