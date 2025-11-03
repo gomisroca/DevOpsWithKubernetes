@@ -28,3 +28,10 @@
 - [2.8.](https://github.com/gomisroca/DevOpsWithKubernetes/tree/master/2.8)
 - [2.9.](https://github.com/gomisroca/DevOpsWithKubernetes/tree/master/2.9)
 - [2.10.](https://github.com/gomisroca/DevOpsWithKubernetes/tree/master/2.10)
+
+### Chapter 4
+
+- [3.1.](https://github.com/gomisroca/DevOpsWithKubernetes/tree/master/3.1)
+- [3.2.](https://github.com/gomisroca/DevOpsWithKubernetes/tree/master/3.2)
+- [3.3.](https://github.com/gomisroca/DevOpsWithKubernetes/tree/master/3.3)
+- [3.4.](https://github.com/gomisroca/DevOpsWithKubernetes/tree/master/3.4)
