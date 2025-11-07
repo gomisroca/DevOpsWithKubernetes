@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>The Project App</title>
+  </head>
+  <body>
+    <h1>The Project App</h1>
+    <img src="/image" alt="Random Image" />
+    <p>DevOps with Kubernetes 2025</p>
+
+    <h2>My Todos</h2>
+    <div>
+      <input
+        type="text"
+        id="todo-input"
+        maxlength="140"
+        placeholder="Enter your todo (max 140 chars)"
+      />
+      <button id="add-todo">Add Todo</button>
+    </div>
+
+    <ul id="todo-list"></ul>
+
+    <script>
+      async function loadTodos() {
+        try {
+          const res = await fetch("/todos");
+          const todos = await res.json();
+          const list = document.getElementById("todo-list");
+          list.innerHTML = "";
+          todos.forEach((t) => {
+            const li = document.createElement("li");
+            li.textContent = t.text;
+            list.appendChild(li);
+          });
+        } catch (err) {
+          console.error("Error loading todos:", err);
+        }
+      }
+
+      document.getElementById("add-todo").addEventListener("click", () => {
+        const input = document.getElementById("todo-input");
+        // Checks
+        const value = input.value.trim();
+        if (!value) return alert("Please enter a todo.");
+
+        // Optimistically add the todo
+        const li = document.createElement("li");
+        li.textContent = value;
+        document.getElementById("todo-list").appendChild(li);
+
+        // Send the todo to the backend
+        fetch("/todos", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ text: value }),
+        });
+
+        // Clear the input
+        input.value = "";
+      });
+
+      window.addEventListener("DOMContentLoaded", loadTodos);
+    </script>
+  </body>
+</html>
