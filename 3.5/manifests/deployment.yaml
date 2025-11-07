@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: project
+  name: todo-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: todo-app
+  template:
+    metadata:
+      labels:
+        app: todo-app
+    spec:
+      volumes:
+        - name: image-data
+          emptyDir: {}
+
+      containers:
+        - name: todo-app
+          image: asfalfa/todo-app:v8
+          imagePullPolicy: Always
+          env:
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: todo-app-config
+                  key: PORT_FRONTEND
+            - name: IMAGE_FILE
+              valueFrom:
+                configMapKeyRef:
+                  name: todo-app-config
+                  key: IMAGE_FILE
+            - name: BACKEND_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: todo-app-config
+                  key: BACKEND_URL
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: image-data
+              mountPath: /data
+
+        - name: todo-backend
+          image: asfalfa/todo-backend:v2
+          imagePullPolicy: Always
+          env:
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: todo-app-config
+                  key: PORT_BACKEND
+            - name: DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: todo-app-config
+                  key: POSTGRES_URL
+          ports:
+            - containerPort: 8081
