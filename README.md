@@ -46,3 +46,4 @@
 ### Chapter 5
 
 - [4.1.](https://github.com/gomisroca/DevOpsWithKubernetes/tree/master/4.1)
+- [4.2.](https://github.com/gomisroca/DevOpsWithKubernetes/tree/master/4.2)

@@ -1,0 +1,45 @@
+name: Cleanup environment
+
+on:
+  delete:
+    branches:
+      - "**"
+
+env:
+  PROJECT_ID: ${{ secrets.GKE_PROJECT }}
+  GKE_CLUSTER: dwk-cluster
+  GKE_ZONE: europe-north1-b
+
+jobs:
+  cleanup:
+    name: Delete namespace for deleted branch
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: "${{ secrets.GKE_SA_KEY }}"
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Get GKE credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: "${{ env.GKE_CLUSTER }}"
+          project_id: "${{ env.PROJECT_ID }}"
+          location: "${{ env.GKE_ZONE }}"
+
+      - name: Delete namespace
+        run: |
+          NS=${{ github.event.ref }}
+          echo "Branch deleted: $NS"
+
+          # Protect the production namespace
+          if [ "$NS" = "main" ] || [ "$NS" = "project" ]; then
+            echo "Skipping deletion of protected namespace: $NS"
+            exit 0
+          fi
+
+          echo "Deleting Kubernetes namespace: $NS"
+          kubectl delete namespace $NS --ignore-not-found
