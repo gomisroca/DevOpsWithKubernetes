@@ -51,3 +51,7 @@
 - [4.4.](https://github.com/gomisroca/DevOpsWithKubernetes/tree/master/4.4)
 - [4.5.](https://github.com/gomisroca/DevOpsWithKubernetes/tree/master/4.5)
 - [4.6.](https://github.com/gomisroca/DevOpsWithKubernetes/tree/master/4.6)
+- [4.7.](https://github.com/gomisroca/DevOpsWithKubernetes/tree/master/4.7)
+- [4.8.](https://github.com/gomisroca/DevOpsWithKubernetes/tree/master/4.8)
+- [4.9.](https://github.com/gomisroca/DevOpsWithKubernetes/tree/master/4.9)
+- [4.10.](https://github.com/gomisroca/DevOpsWithKubernetes/tree/master/4.10)
