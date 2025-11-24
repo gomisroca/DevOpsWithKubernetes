@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: pingpong-cpu-analysis
+  namespace: exercises
+spec:
+  args:
+    - name: threshold
+      value: "0.5"
+  metrics:
+    - name: pingpong-cpu-analysis
+      initialDelay: 1m
+      interval: 30s
+      count: 10
+      failureLimit: 1
+      successCondition: result < args.threshold
+      provider:
+        prometheus:
+          address: http://kube-prometheus-stack-1763-prometheus.prometheus.svc.cluster.local:9090
+          query: |
+            sum(
+              rate(container_cpu_usage_seconds_total{
+                namespace="exercises",
+                container!=""
+              }[5m])
+            )
