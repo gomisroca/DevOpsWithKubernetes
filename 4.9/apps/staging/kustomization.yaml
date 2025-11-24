@@ -1,0 +1,8 @@
+namespace: todo-staging
+
+resources:
+  - ../base
+
+patches:
+  - patches/bc-log-only.yaml
+  - patches/remove-backup.yaml

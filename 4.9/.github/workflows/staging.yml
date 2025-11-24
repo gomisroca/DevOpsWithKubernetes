@@ -1,0 +1,48 @@
+name: Build and Publish to Staging
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build images
+        run: |
+          docker build -t asfalfa/todo-frontend:${{ github.sha }} frontend/
+          docker build -t asfalfa/todo-backend:${{ github.sha }} backend/
+          docker build -t asfalfa/todo-broadcaster:${{ github.sha }} broadcaster/
+
+      - name: Push images
+        run: |
+          docker push asfalfa/todo-frontend:${{ github.sha }}
+          docker push asfalfa/todo-backend:${{ github.sha }}
+          docker push asfalfa/todo-broadcaster:${{ github.sha }}
+
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v2
+
+      - name: Use right images
+        run: |
+          kustomize edit set image todo-frontend=${{ secrets.DOCKERHUB_USERNAME }}/todo-frontend:${GITHUB_SHA}
+          kustomize edit set image todo-backend=${{ secrets.DOCKERHUB_USERNAME }}/todo-backend:${GITHUB_SHA}
+          kustomize edit set image todo-broadcaster=${{ secrets.DOCKERHUB_USERNAME }}/todo-broadcaster:${GITHUB_SHA}
+
+      - name: Commit kustomization changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: "apps/staging/kustomization.yaml"
+          message: "Deploy staging ${{ github.sha }}"
+          push: true

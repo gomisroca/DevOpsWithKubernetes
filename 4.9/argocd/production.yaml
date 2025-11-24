@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: todo-production
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/gomisroca/DevOpsWithKubernetes.git
+    targetRevision: HEAD
+    path: apps/production
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: todo-production
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
