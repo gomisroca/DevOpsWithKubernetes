@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - manifests/config.yaml
+  - manifests/cronjob.yaml
+  - manifests/db-config.yaml
+  - manifests/deployment.yaml
+  - manifests/ingress.yaml
+  - manifests/persistentvolume.yaml
+  - manifests/persistentvolumeclaim.yaml
+  - manifests/service.yaml
+  - manifests/statefulset.yaml
+images:
+  - name: todo-frontend
+    newName: asfalfa/todo-frontend
+    newTag: latest
+  - name: todo-backend
+    newName: asfalfa/todo-backend
+    newTag: latest
+  - name: todo-broadcaster
+    newName: asfalfa/todo-broadcaster
+    newTag: latest

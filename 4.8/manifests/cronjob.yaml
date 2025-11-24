@@ -1,0 +1,48 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: todo-db-backup
+  namespace: project
+spec:
+  schedule: "0 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: db-backup
+              image: europe-north1-docker.pkg.dev/dwk-gke-476607/DevOpsWithKubernetes/todo-db-backup:latest
+              env:
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: todo-db-secret
+                      key: POSTGRES_PASSWORD
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                      name: todo-db-secret
+                      key: POSTGRES_USER
+                - name: PGHOST
+                  valueFrom:
+                    configMapKeyRef:
+                      name: todo-app-config
+                      key: POSTGRES_HOST
+                - name: PGDATABASE
+                  valueFrom:
+                    configMapKeyRef:
+                      name: todo-app-config
+                      key: POSTGRES_DB
+                - name: BUCKET_NAME
+                  value: "todo-db-backups"
+                - name: GOOGLE_APPLICATION_CREDENTIALS
+                  value: /secrets/gcs-key.json
+              volumeMounts:
+                - name: gcs-key
+                  mountPath: /secrets
+                  readOnly: true
+          volumes:
+            - name: gcs-key
+              secret:
+                secretName: gcs-credentials

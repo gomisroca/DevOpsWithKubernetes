@@ -1,0 +1,77 @@
+name: Release application
+
+on:
+  push:
+    branches:
+      - "**"
+
+env:
+  PROJECT_ID: ${{ secrets.GKE_PROJECT }}
+  GKE_CLUSTER: dwk-cluster
+  GKE_ZONE: europe-north1-b
+  REGISTRY: europe-north1-docker.pkg.dev
+  REPOSITORY: DevOpsWithKubernetes
+  BRANCH: ${{ github.ref_name }}
+
+jobs:
+  build-publish-deploy:
+    name: Build, Publish and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: "${{ secrets.GKE_SA_KEY }}"
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Get GKE credentials
+        uses: "google-github-actions/get-gke-credentials@v2"
+        with:
+          cluster_name: "${{ env.GKE_CLUSTER }}"
+          project_id: "${{ env.PROJECT_ID }}"
+          location: "${{ env.GKE_ZONE }}"
+
+      - name: Set up Docker Buildx
+        run: gcloud auth configure-docker "$REGISTRY"
+
+      - name: Set namespace
+        run: |
+          if [ "${{ env.BRANCH }}" = "main" ]; then
+            echo "NAMESPACE=project" >> $GITHUB_ENV
+          else
+            echo "NAMESPACE=${{ env.BRANCH }}" >> $GITHUB_ENV
+          fi
+          echo "Deploying to namespace: $(cat $GITHUB_ENV | grep NAMESPACE)"
+
+      - name: Build & push frontend
+        run: |
+          FRONTEND_IMAGE_TAG=${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/todo-frontend:${{ env.BRANCH }}-${GITHUB_SHA::7}
+          echo "FRONTEND_IMAGE_TAG=$FRONTEND_IMAGE_TAG" >> $GITHUB_ENV
+          docker build -t $FRONTEND_IMAGE_TAG -f frontend/Dockerfile frontend
+          docker push $FRONTEND_IMAGE_TAG
+
+      - name: Build & push backend
+        run: |
+          BACKEND_IMAGE_TAG=${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/todo-backend:${{ env.BRANCH }}-${GITHUB_SHA::7}
+          echo "BACKEND_IMAGE_TAG=$BACKEND_IMAGE_TAG" >> $GITHUB_ENV
+          docker build -t $BACKEND_IMAGE_TAG -f backend/Dockerfile backend
+          docker push $BACKEND_IMAGE_TAG
+
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v2.1.0
+
+      - name: Ensure namespace exists
+        run: |
+          kubectl get namespace $NAMESPACE >/dev/null 2>&1 || kubectl create namespace $NAMESPACE
+
+      - name: Deploy
+        run: |
+          kustomize edit set image asfalfa/todo-frontend=$FRONTEND_IMAGE_TAG
+          kustomize edit set image asfalfa/todo-backend=$BACKEND_IMAGE_TAG
+          kustomize build . | kubectl apply -n $NAMESPACE -f -
+          kubectl rollout status -n $NAMESPACE deployment/todo-frontend
+          kubectl get pods -n $NAMESPACE -o wide
