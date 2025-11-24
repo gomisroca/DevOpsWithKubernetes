@@ -1,0 +1,53 @@
+name: Build and Deploy (Staging)
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build images
+        run: |
+          docker build -t asfalfa/todo-frontend:${{ github.sha }} frontend/
+          docker build -t asfalfa/todo-backend:${{ github.sha }} backend/
+          docker build -t asfalfa/todo-broadcaster:${{ github.sha }} broadcaster/
+
+      - name: Push images
+        run: |
+          docker push asfalfa/todo-frontend:${{ github.sha }}
+          docker push asfalfa/todo-backend:${{ github.sha }}
+          docker push asfalfa/todo-broadcaster:${{ github.sha }}
+
+      - name: Checkout config repo
+        uses: actions/checkout@v4
+        with:
+          repository: asfalfa/todo-app-config
+          token: ${{ secrets.GH_PAT }}
+          path: config-repo
+
+      - name: Update staging images
+        run: |
+          cd config-repo/apps/staging
+          kustomize edit set image asfalfa/todo-backend=${{ github.sha }}
+          kustomize edit set image asfalfa/todo-frontend=${{ github.sha }}
+          kustomize edit set image asfalfa/todo-broadcaster=${{ github.sha }}
+
+      - name: Commit changes
+        run: |
+          cd config-repo
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add .
+          git commit -m "Staging release ${{ github.sha }}"
+          git push

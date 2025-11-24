@@ -1,0 +1,21 @@
+resources:
+  - config.yaml
+  - cronjob.yaml
+  - db-config.yaml
+  - deployment.yaml
+  - ingress.yaml
+  - persistentvolume.yaml
+  - persistentvolumeclaim.yaml
+  - service.yaml
+  - statefulset.yaml
+
+images:
+  - name: todo-frontend
+    newName: asfalfa/todo-frontend
+    newTag: latest
+  - name: todo-backend
+    newName: asfalfa/todo-backend
+    newTag: latest
+  - name: todo-broadcaster
+    newName: asfalfa/todo-broadcaster
+    newTag: latest

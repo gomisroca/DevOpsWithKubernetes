@@ -1,0 +1,54 @@
+name: Build and Deploy (Production)
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build images
+        run: |
+          docker build -t asfalfa/todo-frontend:${{ github.ref_name }} frontend/
+          docker build -t asfalfa/todo-backend:${{ github.ref_name }} backend/
+          docker build -t asfalfa/todo-broadcaster:${{ github.ref_name }} broadcaster/
+
+      - name: Push images
+        run: |
+          docker push asfalfa/todo-frontend:${{ github.ref_name }}
+          docker push asfalfa/todo-backend:${{ github.ref_name }}
+          docker push asfalfa/todo-broadcaster:${{ github.ref_name }}
+
+      - name: Checkout config repo
+        uses: actions/checkout@v4
+        with:
+          repository: asfalfa/todo-app-config
+          token: ${{ secrets.GH_PAT }}
+          path: config-repo
+
+      - name: Update production images
+        run: |
+          cd config-repo/apps/production
+          kustomize edit set image asfalfa/todo-backend=${{ github.ref_name }}
+          kustomize edit set image asfalfa/todo-frontend=${{ github.ref_name }}
+          kustomize edit set image asfalfa/todo-broadcaster=${{ github.ref_name }}
+
+      - name: Commit changes
+        run: |
+          cd config-repo
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add .
+          git commit -m "Production release ${{ github.ref_name }}"
+          git push
