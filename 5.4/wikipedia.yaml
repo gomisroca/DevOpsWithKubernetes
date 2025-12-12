@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wikipedia-app
+  namespace: exercises
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wikipedia-app
+  template:
+    metadata:
+      labels:
+        app: wikipedia-app
+    spec:
+      volumes:
+        - name: html-volume
+          emptyDir: {}
+
+      initContainers:
+        - name: fetch-kubernetes-page
+          image: curlimages/curl:latest
+          command: [
+              "sh",
+              "-c",
+              "echo 'Fetching Kubernetes Wikipedia page...' && \
+              curl -s https://en.wikipedia.org/wiki/Kubernetes \
+              -o /usr/share/nginx/html/index.html",
+            ]
+          volumeMounts:
+            - name: html-volume
+              mountPath: /usr/share/nginx/html
+
+      containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: html-volume
+              mountPath: /usr/share/nginx/html
+
+        - name: random-page-fetcher
+          image: curlimages/curl:latest
+          command: [
+              "sh",
+              "-c",
+              "while true; do \
+              WAIT=$(( 300 + $RANDOM % 600 )); \
+              echo \"Waiting $WAIT seconds...\"; \
+              sleep $WAIT; \
+              echo 'Fetching random Wikipedia page...'; \
+              curl -Ls https://en.wikipedia.org/wiki/Special:Random \
+              -o /usr/share/nginx/html/random.html; \
+              done",
+            ]
+          volumeMounts:
+            - name: html-volume
+              mountPath: /usr/share/nginx/html
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wikipedia-service
+  namespace: exercises
+spec:
+  type: ClusterIP
+  selector:
+    app: wikipedia-app
+  ports:
+    - port: 80
+      targetPort: 80
