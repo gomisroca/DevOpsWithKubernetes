@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - manifests/analysistemplate.yaml
+  - manifests/db-config.yaml
+  - manifests/gateway.yaml
+  - manifests/logger-config.yaml
+  - manifests/rollout.yaml
+  - manifests/route.yaml
+  - manifests/service.yaml
+  - manifests/statefulset.yaml
+images:
+  - name: ping-pong
+    newName: asfalfa/ping-pong
+    newTag: latest
+  - name: random-logger
+    newName: asfalfa/random-logger
+    newTag: latest

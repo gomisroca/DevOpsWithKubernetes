@@ -1,0 +1,172 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: exercises
+  name: logger-pingpong-v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logger-pingpong
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: logger-pingpong
+        version: v1
+    spec:
+      containers:
+        - name: random-logger
+          image: asfalfa/random-logger:1
+          imagePullPolicy: Always
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 2
+            periodSeconds: 5
+          env:
+            - name: PORT
+              value: "8080"
+            - name: PINGS_URL
+              value: "http://localhost:8081/pings"
+            - name: MESSAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: logger-config
+                  key: MESSAGE
+            - name: VERSION
+              value: "1"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config
+          ports:
+            - containerPort: 8080
+
+        - name: ping-pong
+          image: asfalfa/ping-pong:1
+          imagePullPolicy: Always
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 2
+            periodSeconds: 5
+          env:
+            - name: PORT
+              value: "8081"
+            - name: DATABASE_URL
+              value: "postgres://postgres:postgres@postgres.exercises.svc.cluster.local:5432/pingpong"
+          ports:
+            - containerPort: 8081
+
+      volumes:
+        - name: config-volume
+          configMap:
+            name: logger-config
+            items:
+              - key: information.txt
+                path: information.txt
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: exercises
+  name: logger-pingpong-svc-v1
+spec:
+  type: ClusterIP
+  selector:
+    app: logger-pingpong
+    version: v1
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 8080
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: exercises
+  name: logger-pingpong-v2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logger-pingpong
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: logger-pingpong
+        version: v2
+    spec:
+      containers:
+        - name: random-logger
+          image: asfalfa/random-logger:2
+          imagePullPolicy: Always
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 2
+            periodSeconds: 5
+          env:
+            - name: PORT
+              value: "8080"
+            - name: PINGS_URL
+              value: "http://localhost:8081/pings"
+            - name: MESSAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: logger-config
+                  key: MESSAGE
+            - name: VERSION
+              value: "2"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config
+          ports:
+            - containerPort: 8080
+
+        - name: ping-pong
+          image: asfalfa/ping-pong:2
+          imagePullPolicy: Always
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 2
+            periodSeconds: 5
+          env:
+            - name: PORT
+              value: "8081"
+            - name: DATABASE_URL
+              value: "postgres://postgres:postgres@postgres.exercises.svc.cluster.local:5432/pingpong"
+          ports:
+            - containerPort: 8081
+
+      volumes:
+        - name: config-volume
+          configMap:
+            name: logger-config
+            items:
+              - key: information.txt
+                path: information.txt
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: exercises
+  name: logger-pingpong-svc-v2
+spec:
+  type: ClusterIP
+  selector:
+    app: logger-pingpong
+    version: v2
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 8080
