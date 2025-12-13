@@ -1,0 +1,5 @@
+{
+  "data": {
+    "ingress-class": "kourier.ingress.networking.knative.dev"
+  }
+}
